@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -180,4 +181,73 @@ func TestRequestBody(t *testing.T) {
 	bytes, err := io.ReadAll(response.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, "Hello Bagus", string(bytes))
+}
+
+type RegisterRequest struct {
+	Username string `json:"username" xml:"username" form:"username"`
+	Password string `json:"password" xml:"password" form:"password"`
+    Name string `json:"name" xml:"name" form:"name"`
+}
+
+func TestBodyParser(t *testing.T) {
+	app.Post("/register", func(ctx *fiber.Ctx) error {
+		request := new(RegisterRequest) //pointer ke register request
+		err := ctx.BodyParser(request) // parse request body ke register request
+		fmt.Println(request)
+		if err!= nil {
+            return err
+        }
+
+		return ctx.SendString("Register Success " + request.Username)
+    })
+}
+
+func TestBodyParserJSON(t *testing.T) {
+	TestBodyParser(t)
+
+	body := strings.NewReader(`{"username":"Bagus", "password":"rahasia", "name": "Bagus Wicaksono"}`)
+	request := httptest.NewRequest("POST", "/register", body)
+	request.Header.Set("Content-Type", "application/json")
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, response.StatusCode)
+	
+	bytes, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Register Success Bagus", string(bytes))
+}
+
+func TestBodyParserForm(t *testing.T) {
+	TestBodyParser(t)
+
+	body := strings.NewReader(`username=Bagus&password=rahasia&name=Bagus Wicaksono`)
+	request := httptest.NewRequest("POST", "/register", body)
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, response.StatusCode)
+	
+	bytes, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Register Success Bagus", string(bytes))
+}
+
+func TestBodyParserXml(t *testing.T) {
+	TestBodyParser(t)
+
+	body := strings.NewReader(
+		`<RegisterRequest>
+			<username>Bagus</username>
+			<password>rahasia</password>
+			<name>Bagus Wicaksono</name>
+		</RegisterRequest>`)
+	request := httptest.NewRequest("POST", "/register", body)
+	request.Header.Set("Content-Type", "application/xml")
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, response.StatusCode)
+	
+	bytes, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Register Success Bagus", string(bytes))
 }
