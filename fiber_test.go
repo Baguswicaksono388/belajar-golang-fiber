@@ -287,3 +287,27 @@ func TestDownloadFile(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "ini data ku", string(bytes))
 }
+
+
+func TestRoutingGroup(t *testing.T) {
+	helloWordl := func(ctx *fiber.Ctx) error {
+		return ctx.SendString("Hello, World!")
+	}
+
+	api := app.Group("/api")
+	api.Get("/hello", helloWordl)
+	api.Get("/world", helloWordl)
+
+	web := app.Group("/web")
+	web.Get("/hello", helloWordl)
+	web.Get("/world", helloWordl)
+
+	request := httptest.NewRequest("GET", "/api/hello", nil)
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, response.StatusCode)
+
+	bytes, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Hello, World!", string(bytes))
+}
