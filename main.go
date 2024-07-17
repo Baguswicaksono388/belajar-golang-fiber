@@ -2,6 +2,7 @@ package main
 
 import (
 	// "fmt"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,6 +16,14 @@ func main() {
 		// Prefork: true,
 	})
 
+	// Akan berjalan di endpoint yang ada /api nya
+	app.Use("/api",func (ctx *fiber.Ctx) error  {
+		fmt.Println("I'm middleware before processing request")
+		err := ctx.Next()
+		fmt.Println("I'm middleware after processing request")
+		return err
+	})
+
 
 	// if fiber.IsChild() {
 	// 	fmt.Println("I'm a child")
@@ -22,7 +31,7 @@ func main() {
 	// 	fmt.Println("I'm a parent")
 	// }
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/api/hello", func(c *fiber.Ctx) error {
         return c.SendString("Hello, World 👋!")
     })
 
