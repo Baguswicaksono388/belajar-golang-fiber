@@ -1,0 +1,1 @@
+create table sample( id varchar(255) not NULL, name varchar(255) not NULL, primary key (id)) engine=INNODB;
