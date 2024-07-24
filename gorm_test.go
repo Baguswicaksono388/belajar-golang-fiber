@@ -1,7 +1,10 @@
 package main
 
 import (
+	"strconv"
 	"testing"
+
+	"belajar-golang-fiber/entity"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/mysql"
@@ -88,4 +91,35 @@ func TestScanRow(t *testing.T) {
 		assert.Nil(t, err)
 	}
 	assert.Equal(t, 4, len(samples))
+}
+
+func TestCreateUser(t *testing.T) {
+	// import Struct User from folder Entity
+	user := entity.User{ID: "1", Password: "rahasia", Name: entity.Name{
+		FirstName: "Bagus",
+		LastName:  "Wicaksono",
+		MiddleName: "Testing",
+	}, Information: "ini akan di ignore",}
+
+    response := db.Create(&user)
+    assert.Nil(t, response.Error)
+    assert.Equal(t, int64(1), response.RowsAffected)
+}
+
+// Memasukkan data lebih dari 1
+func TestBatchInsert(t *testing.T) {
+	var users []entity.User
+	for i :=2; i < 10; i++ {
+		users = append(users, entity.User{
+			ID: strconv.Itoa(i),
+			Password: "rahasia",
+			Name: entity.Name{
+				FirstName: "User" + strconv.Itoa(i),
+			},
+		})
+	}
+
+	result := db.Create(&users)
+	assert.Nil(t,  result.Error)
+	assert.Equal(t, 8, int(result.RowsAffected))
 }
