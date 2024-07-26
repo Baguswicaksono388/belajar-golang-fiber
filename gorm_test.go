@@ -199,3 +199,31 @@ func TestManualTransactionError(t *testing.T) {
     	tx.Commit()
     }
 }
+
+func TestQuerrySingleObject(t *testing.T) {
+	user := entity.User{}
+	err := db.First(&user).Error // mengambil 1 data pertama berdasarkan id
+	assert.Nil(t, err)
+	assert.Equal(t, "1", user.ID)
+
+
+	user = entity.User{}
+	err = db.Last(&user).Error //mengambil 1 data terakhir berdasarkan id
+	assert.Nil(t, err)
+	assert.Equal(t, "9", user.ID)
+}
+
+func TestQuerryInlineCondition(t *testing.T) {
+	user := entity.User{}
+	err := db.Take(&user, "id = ?", "5").Error
+	assert.Nil(t, err)
+	assert.Equal(t, "5", user.ID)
+	assert.Equal(t, "User5", user.Name.FirstName)
+}
+
+func TestQueryAllObjects(t *testing.T) {
+	var users []entity.User
+	err := db.Find(&users, "id in ?", []string{"1","2","3","4"}).Error
+	assert.Nil(t, err)
+	assert.Equal(t, 4, len(users))
+}
