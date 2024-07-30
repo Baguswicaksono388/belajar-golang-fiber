@@ -1,6 +1,7 @@
 package main
 
 import (
+	entity "belajar-golang-fiber/entity"
 	"bytes"
 	_ "embed"
 	"encoding/json"
@@ -384,5 +385,20 @@ func TestClient(t *testing.T) {
 	assert.Contains(t, response, "Example Domain")
 
 	fmt.Println(response)
+}
+
+func TestAutoIncrement(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		userLog := entity.UserLogs{
+			UserId: "1",
+			Action: "Test Action",
+		}
+
+		err := db.Create(&userLog).Error
+		assert.Nil(t, err)
+
+		assert.NotEqual(t, 0, userLog.ID)
+		fmt.Println(userLog.ID)
+	}
 }
 
